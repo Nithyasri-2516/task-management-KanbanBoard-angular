@@ -1,0 +1,141 @@
+<div class="container">
+  <nav class="navbar">
+    <img id="logo-img" src="assets/value-chain.png" alt="Kanban Tool" height="40" width="40" />
+    <div class="logo">Chainflow</div>
+    
+    <!-- Assign Section Positioned Right Near the Logout Button -->
+   <!-- Navbar Section with View Assigned Tasks Link -->
+<div class="assign-container">
+  <a routerLink="/assigned-tasks" class="assign">View Assigned Tasks</a>
+</div>
+
+    
+    <div class="profile-section" *ngIf="user">
+      <span class="profile-name">{{ user.name }}</span>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <marquee>
+    "Your daily workflow, crystal clear."
+  </marquee>
+
+  <section class="intro-section">
+    <div class="content">
+      <h1>A Kanban tool for visual planning</h1>
+      <p>
+        Simplify your workflow and increase efficiency with our powerful Kanban tool. 
+        Manage tasks effectively and visualize your progress with ease.
+      </p>
+    </div>
+    <div class="image"> 
+      <img id="kanban-img" src="assets/Kanban_Board.jpg" alt="Kanban Tool" height="390" width="700"/>
+    </div>
+  </section>
+
+  <div class="kanban-container">
+    <p class="center-text">
+      ChainFlow's free Kanban board is fluid and highly customizable and helps you deliver great results as a team. 
+      Manage projects from start to finish while keeping things simple.
+    </p>
+    <button class="kanban-btn" routerLink="/view-customization">Get Started</button>
+  </div>
+  
+  <section class="features">
+    <h3 id="feature-heading"> Why ChainFlow is the best Kanban board creator? </h3>
+    <div class="features-container">
+      <div class="row">
+        <div class="feature">
+          <img src="assets/brainstorm.png" alt="Visualize processes" class="icon"  height="90" width="40"/>
+          <h3>Quickly visualize processes</h3>
+          <p>
+            Use chainFlow's powerful cards to add tasks with just a few clicks. Avoid wasting time with complicated workflows, and simplify your process using the default setup or customize the Kanban board according to your needs.
+          </p>
+        </div>
+  
+        <div class="feature">
+          <img src="assets/file.png" alt="Kanban creation" class="icon" />
+          <h3>Flexible Kanban creation</h3>
+          <p>
+            chainFlow's Kanban board has a flexible structure. Drag and drop tasks, and your Kanban board will reformat the cards automatically. Or customize your Kanban tool by color-coding tasks, adding more columns and swimlanes, everything to fit your workflow needs.
+          </p>
+        </div>
+      </div>
+  
+      <div class="row">
+        <div class="feature">
+          <img src="assets/paper.png" alt="Collaborate easily" class="icon" />
+          <h3>Collaborate easily</h3>
+          <p>
+            Work together with your team in real-time or asynchronously. Share updates, leave comments, and ensure everyone stays on the same page regardless of their location.
+          </p>
+        </div>
+  
+        <div class="feature">
+          <img src="assets/idea.png" alt="Track progress" class="icon" />
+          <h3>Track progress effortlessly</h3>
+          <p>
+            Monitor your team’s performance and project status at a glance. Use built-in analytics and reporting tools to keep track of deadlines and ensure all tasks are completed on time.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="faq-container">
+    <h1>FAQs</h1>
+    <div *ngFor="let item of faqItems; let i = index" class="faq-item">
+      <div class="faq-question" (click)="toggleFAQ(i)">
+        {{ item.question }}
+        <span class="toggle-icon">{{ item.open ? '▲' : '▼' }}</span>
+      </div>
+  
+      <div class="faq-answer" [class.expanded]="item.open" *ngIf="item.open">
+        {{ item.answer }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="chainflow-footer">
+  <div class="footer-container">
+    <div class="footer-section">
+      <h2 class="footer-logo">Chainflow</h2>
+      <p class="footer-about">
+        Empowering businesses with cutting-edge blockchain solutions. Join us to shape the future of decentralized systems.
+      </p>
+    </div>
+
+    <div class="footer-section">
+      <h3>Quick Links</h3>
+      <ul class="footer-links">
+        <li><a href="/about">About Us</a></li>
+        <li><a href="/services">Our Services</a></li>
+        <li><a href="/blog">Blog</a></li>
+        <li><a href="/careers">Careers</a></li>
+        <li><a href="/contact">Contact Us</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-section">
+      <h3>Contact Us</h3>
+      <ul class="footer-contact">
+        <li>Email: <a href="mailto:support@chainflow.com">supportchainflow.com</a></li>
+        <li>Phone: <a href="tel:+1234567890">+1 (234) 567-890</a></li>
+        <li>Address: 123 Blockchain Lane, Crypto City, 56789</li>
+      </ul>
+    </div>
+
+    <div class="footer-section">
+      <h3>Follow Us</h3>
+      <div class="footer-social">
+        <a href="https://twitter.com/chainflow" target="_blank">Twitter</a>
+        <a href="https://linkedin.com/company/chainflow" target="_blank">LinkedIn</a>
+        <a href="https://github.com/chainflow" target="_blank">GitHub</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2025 Chainflow. All rights reserved.</p>
+  </div>
+</footer>

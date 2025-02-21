@@ -1,0 +1,83 @@
+<nav class="navbar navbar-expand-lg navbar-light">
+  <a class="navbar-brand text-white" routerLink="/">Employee Management</a>
+  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav ms-auto">
+      <li class="nav-item">
+        <button class="btn-save" (click)="openModal()">Add Employee</button>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white" routerLink="/assignTasks">Assign Tasks</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container">
+  <!-- Employee List Section -->
+  <div class="employee-list-section">
+    <div class="card">
+      <div class="card-header">
+        <h6>Employee List</h6>
+      </div>
+      <div class="card-body">
+        <div id="pdfContent">
+          <table class="employee-table">
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Name</th>
+                <th>Employee ID</th>
+                <th>Email-Id</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let employee of employees; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ employee.name }}</td>
+                <td>{{ employee.empid }}</td>
+                <td>{{ employee.email }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <button class="btn-download-pdf" (click)="downloadPDF()">Download PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Popup for Adding Employee -->
+<div class="modal" [ngClass]="{'show-modal': showModal}">
+  <div class="modal-content">
+    <span class="modal-close" (click)="closeModal()">&times;</span>
+    <div class="modal-header">Add New Employee</div>
+    <div class="modal-body">
+      <form [formGroup]="employeeForm">
+        <div class="form-group">
+          <label for="employeeName">Name</label>
+          <input id="employeeName" type="text" formControlName="name" />
+        </div>
+        <div class="form-group">
+          <label for="employeeEmpid">Employee ID</label>
+          <input id="employeeEmpid" type="text" formControlName="empid" />
+        </div>
+        <div class="form-group">
+          <label for="employeeEmail">Email-Id</label>
+          <input id="employeeEmail" type="email" formControlName="email" />
+        </div>
+        <div class="form-group">
+          <label for="employeePassword">Password</label>
+          <input id="employeePassword" type="password" formControlName="password" />
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-reset" (click)="resetEmployeeForm()">Reset</button>
+          <button type="button" class="btn-save" *ngIf="!isEditing" (click)="save()">Save Employee</button>
+          <button type="button" class="btn-update" *ngIf="isEditing" (click)="updateEmployee()">Update Employee</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

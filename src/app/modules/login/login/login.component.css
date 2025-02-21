@@ -1,0 +1,91 @@
+/* Container */
+.login-container {
+    width: 90%; /* Dynamic width for responsiveness */
+    max-width: 300px; /* Restricts maximum width */
+    margin: 50px auto;
+    padding: 20px;
+    border: 1px solid #eed12d;
+    padding-right: 40px;
+    border-radius: 8px;
+    background-color: #fff9db;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  /* Container for centering the image */
+#logo-img {
+    display: block; /* Ensures the image is treated as a block-level element */
+    margin-left: auto; /* Automatically adjust left margin */
+    margin-right: auto; /* Automatically adjust right margin */
+    /* Optional: If you need vertical centering, you can use flexbox on the parent container */
+  }
+  
+  /* Header */
+  .login-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #eed12d;
+  }
+  
+  /* Form Group */
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  /* Labels */
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  /* Input Fields */
+  input.form-control,
+  select.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgb(238, 209, 45);
+    border-radius: 4px;
+    outline: none;
+    background-color: #fff;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  
+  /* Focus Effect for Inputs */
+  input.form-control:focus,
+  select.form-control:focus {
+    border-color: #d4b715;
+    box-shadow: 0 0 5px #eed12d;
+  }
+  
+  /* Error Highlighting */
+  input.form-control.ng-invalid.ng-touched {
+    border-color: red;
+    box-shadow: 0 0 5px red;
+  }
+  
+  /* Button */
+  .btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #eed12d;
+    border: none;
+    border-radius: 4px;
+    color: #333;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s, opacity 0.3s;
+  }
+  
+  /* Hover Effect for Button */
+  .btn:hover {
+    background-color: #d4b715;
+  }
+  
+  /* Disabled Button */
+  .btn:disabled {
+    background-color: #f0e68c; /* Light yellow */
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+  

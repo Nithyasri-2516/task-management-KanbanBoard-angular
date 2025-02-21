@@ -1,0 +1,177 @@
+/* Navigation Bar */
+nav {
+  background-color: #eed12d; /* Yellow Theme */
+  color: white;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  position: relative;
+}
+
+/* Navigation Heading */
+nav h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  flex-grow: 1;
+}
+
+/* Back Button */
+#back {
+  background-color: #fff;
+  color: #333;
+  font-weight: bold;
+  padding: 8px 16px;
+  border-radius: 5px;
+  transition: background 0.3s ease-in-out, transform 0.2s ease-in-out;
+}
+
+#back:hover {
+  background-color: #c7aa23; /* Darker Yellow */
+  transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  #back {
+    margin-bottom: 10px;
+  }
+
+  nav h2 {
+    font-size: 1.2rem;
+  }
+}
+
+
+/* Kanban Board */
+.kanban-board {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.kanban-columns {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+/* Kanban Columns */
+.kanban-column {
+  flex: 1;
+  min-width: 280px;
+  max-width: 350px;
+  padding: 10px;
+  background-color: #f4f4f4;
+  border: 2px dashed #eed12d;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out;
+}
+
+.kanban-column h3 {
+  text-align: center;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.task-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Task Card */
+.task-card {
+  margin: 10px 0;
+  cursor: grab;
+  transition: transform 0.2s ease-in-out;
+}
+
+.task-card:active {
+  cursor: grabbing;
+  transform: scale(1.05);
+}
+
+/* Buttons */
+.completed-tasks, button.mat-button {
+  margin-top: 10px;
+  background-color: #eed12d;
+  color: white;
+  font-weight: bold;
+  width: 100%;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  transition: background 0.3s ease-in-out;
+}
+
+.completed-tasks:hover, button.mat-button:hover {
+  background-color: #c7aa23;
+}
+
+/* Material Card */
+mat-card {
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  margin-bottom: 16px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+mat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Material Card Title */
+mat-card-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+mat-card-content p {
+  font-size: 0.95rem;
+  color: #555;
+  margin: 4px 0;
+}
+
+mat-card-content p:first-child {
+  font-weight: 600;
+}
+
+mat-card-content p:nth-child(3) {
+  font-weight: bold;
+  color: #d32f2f;
+}
+
+/* Priority-based Styling */
+.high-priority {
+  color: #d32f2f;
+  font-weight: bold;
+}
+
+.medium-priority {
+  color: #ff9800;
+  font-weight: bold;
+}
+
+.low-priority {
+  color: #388e3c;
+  font-weight: bold;
+}

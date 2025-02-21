@@ -1,0 +1,41 @@
+<div class="navbar">
+  <button (click)="changeView('kanban')">Kanban View</button>
+  <button (click)="toggleTaskForm()">Add Task</button>
+</div>
+
+<!-- Task Form Modal -->
+<div *ngIf="showTaskForm" class="task-form-overlay">
+  <div class="task-form-container">
+    <button class="close-btn" (click)="closeTaskForm()">×</button>
+    <h3>{{ isEditing ? 'Edit Task' : 'Add New Task' }}</h3>
+    <form (ngSubmit)="addTask()" #taskForm="ngForm">
+      <input type="text" placeholder="Task Name" [(ngModel)]="newTask.taskName" name="taskName" required />
+      <textarea placeholder="Description" [(ngModel)]="newTask.description" name="description" required></textarea>
+      <select [(ngModel)]="newTask.priority" name="priority" required>
+        <option value="" disabled selected>Select Priority</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+      <select [(ngModel)]="newTask.status" name="status" required>
+        <option *ngFor="let column of columns" [value]="column.name">{{ column.name }}</option>
+      </select>
+      <input type="date" [(ngModel)]="newTask.dueDate" name="dueDate" required />
+      <button type="submit" [disabled]="!taskForm.form.valid">{{ isEditing ? 'Update Task' : 'Add Task' }}</button>
+    </form>
+  </div>
+</div>
+
+<!-- Kanban View -->
+<div *ngIf="viewMode === 'kanban'" class="kanban-board">
+  <div class="column" *ngFor="let column of columns" [id]="column.id"
+       (dragover)="onDragOver($event)" (drop)="onDrop($event, column.name)">
+    <h2>{{ column.name }}</h2>
+    <div class="task" draggable="true" *ngFor="let item of filterTickets(column.name)"
+         (dragstart)="onDragStart(item)">
+      <p>{{ item.taskName }} <br> {{ item.description }} <br> Priority: {{ item.priority }} <br> Due Date: {{ item.dueDate | date }}</p>
+      <button (click)="editTask(item)">Edit</button>
+      <button (click)="deleteTask(item)">Delete</button>
+    </div>
+  </div>
+</div>

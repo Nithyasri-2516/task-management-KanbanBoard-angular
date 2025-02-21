@@ -1,0 +1,166 @@
+/* Navigation Bar */
+nav {
+  background-color: #eed12d; /* Yellow Theme */
+  color: white;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  position: relative;
+}
+
+/* Navigation Heading */
+nav h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  flex-grow: 1;
+}
+
+/* Back Button */
+#back {
+  background-color: #fff;
+  color: #333;
+  font-weight: bold;
+  padding: 8px 16px;
+  border-radius: 5px;
+  transition: background 0.3s ease-in-out, transform 0.2s ease-in-out;
+}
+
+#back:hover {
+  background-color: #e0dbc1; /* Darker Yellow */
+  transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  #back {
+    margin-bottom: 10px;
+  }
+
+  nav h2 {
+    font-size: 1.2rem;
+  }
+}
+
+
+/* Assigned Tasks Container */
+.assigned-tasks-container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #fffbe6; /* Light Yellow Background */
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  border-left: 5px solid #eed12d;
+}
+
+.assigned-tasks-container h2 {
+  color: #333;
+  text-align: center;
+  font-size: 1.6rem;
+  margin-bottom: 16px;
+}
+
+/* Task Card */
+.task-card {
+  margin-bottom: 16px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.task-card mat-card {
+  background-color: #fffae0; /* Soft Yellow */
+  border-left: 4px solid #eed12d; /* Accent Border */
+  padding: 16px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.task-card mat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Task Title */
+mat-card-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+/* Task Details */
+mat-card-content p {
+  font-size: 1rem;
+  color: #555;
+  margin: 4px 0;
+}
+
+/* Priority-Based Colors */
+.high-priority {
+  color: #d32f2f; /* Red */
+  font-weight: bold;
+}
+
+.medium-priority {
+  color: #ff9800; /* Orange */
+  font-weight: bold;
+}
+
+.low-priority {
+  color: #388e3c; /* Green */
+  font-weight: bold;
+}
+
+/* Start Kanban Button */
+button[mat-button] {
+  background-color: #eed12d;
+  color: #333;
+  font-weight: bold;
+  padding: 8px 16px;
+  border-radius: 5px;
+  transition: background 0.3s ease-in-out, transform 0.2s ease-in-out;
+}
+
+button[mat-button]:hover {
+  background-color: #c7aa23; /* Darker Yellow */
+  transform: scale(1.05);
+}
+
+/* No Tasks Message */
+ng-template p {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #777;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .assigned-tasks-container {
+    padding: 15px;
+  }
+
+  mat-card-title {
+    font-size: 1.1rem;
+  }
+
+  mat-card-content p {
+    font-size: 0.9rem;
+  }
+
+  button[mat-button] {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+  }
+}

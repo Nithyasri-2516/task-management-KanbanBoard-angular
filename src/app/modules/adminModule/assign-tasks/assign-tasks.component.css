@@ -1,0 +1,91 @@
+/* Container to center the content */
+mat-card {
+  margin: 20px auto;
+  padding: 20px;
+  max-width: 600px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Button style */
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f8f9fa;
+  padding: 12px 20px;
+  border-bottom: 2px solid #eed12d;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+button {
+  background-color: #eed12d;
+  color: #333;
+  border: none;
+  padding: 10px 16px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out, transform 0.2s ease-in-out;
+}
+
+button:hover {
+  background-color: #d4b10e;
+  transform: scale(1.05);
+}
+
+#back {
+  margin-right: auto;
+}
+
+#view-assigned-tasks {
+  margin-left: auto;
+}
+
+
+/* Form control styling */
+mat-form-field {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+/* Task card title */
+mat-card-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #eed12d;
+}
+
+/* Button styling for the form submit */
+button[type="submit"] {
+  width: 100%;
+  margin-top: 20px;
+  color: #eed12d;
+}
+
+/* Form section spacing */
+mat-form-field .mat-label {
+  font-weight: bold;
+  color:#eed12d;
+}
+
+/* Style for select inputs */
+mat-select {
+  font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  mat-card {
+    padding: 15px;
+    margin: 10px;
+  }
+
+  #back {
+    font-size: 14px;
+  }
+}

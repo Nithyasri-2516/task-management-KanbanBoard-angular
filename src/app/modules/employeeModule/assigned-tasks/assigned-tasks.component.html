@@ -1,0 +1,31 @@
+
+<nav>
+  <button id="back" (click)="backtohome()"> Back</button>
+  <h2>Assigned Tasks</h2>
+</nav>
+<div class="assigned-tasks-container">
+    <h2>Assigned Tasks</h2>
+  
+    <!-- Check if there are assigned tasks -->
+    <div *ngIf="assignedTasks.length > 0; else noTasks">
+      <div *ngFor="let task of assignedTasks" class="task-card">
+        <mat-card>
+          <mat-card-title>{{ task.taskName }}</mat-card-title>
+          <mat-card-content>
+            <p>Assigned To: {{ task.assignedTo.name }}</p>
+            <p>Priority: {{ task.priority }}</p>
+            <p>Due Date: {{ task.dueDate | date: 'shortDate' }}</p>
+            
+            <!-- "Start Kanban" button -->
+            <button mat-button color="primary" (click)="startKanban(task)">Start Kanban</button>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  
+    <!-- If no tasks are assigned -->
+    <ng-template #noTasks>
+      <p>No tasks assigned yet.</p>
+    </ng-template>
+  </div>
+  

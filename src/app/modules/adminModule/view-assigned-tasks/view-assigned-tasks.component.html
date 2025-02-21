@@ -1,0 +1,30 @@
+<div class="tasks-container">
+    <h2 class="title">Assigned Tasks</h2>
+  
+    <div *ngIf="assignedTasks.length === 0" class="no-tasks">
+      <p>No tasks assigned to this employee.</p>
+    </div>
+  
+    <div *ngIf="assignedTasks.length > 0" class="tasks-list">
+      <div *ngFor="let task of assignedTasks" class="task-item">
+        <div class="task-icon">
+          <mat-icon>task</mat-icon>
+        </div>
+        <div class="task-content">
+          <h3 class="task-name">{{ task.taskName }}</h3> <!-- Task Name -->
+          
+          <div class="task-details">
+            <span class="due-date">Due Date: {{ task.dueDate | date: 'shortDate' }}</span> <!-- Due Date -->
+            <span class="priority">Priority: {{ task.priority }}</span> <!-- Priority -->
+          </div>
+  
+          <p class="task-status">Status: {{ task.status }}</p> <!-- Task Status -->
+        </div>
+        <!-- Delete button -->
+        <button mat-icon-button (click)="deleteTask(task._id)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+  

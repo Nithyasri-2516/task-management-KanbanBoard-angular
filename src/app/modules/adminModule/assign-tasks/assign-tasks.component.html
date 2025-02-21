@@ -1,0 +1,51 @@
+
+<nav>
+<button id="back" (click)="backtoadminpage()" > Back </button>
+<button (click)="viewAssigned()" id="view-assigned-tasks">View Assigned tasks</button>
+
+</nav>
+<mat-card class="task-card">
+  <mat-card-title>Assign Task</mat-card-title>
+  <form [formGroup]="taskForm" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Task Name</mat-label>
+      <input matInput formControlName="taskName" placeholder="Enter task name" required />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Assign To</mat-label>
+      <mat-select formControlName="assignedTo">
+        <mat-option *ngFor="let employee of employees" [value]="employee">
+          {{ employee.name }} 
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Due Date</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="dueDate" required />
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Priority</mat-label>
+      <mat-select formControlName="priority">
+        <mat-option *ngFor="let level of priorities" [value]="level">
+          {{ level }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    
+
+    <button mat-raised-button  type="submit" [disabled]="taskForm.invalid">
+      Assign Task
+    </button>
+
+
+    
+  </form>
+</mat-card>
+
+

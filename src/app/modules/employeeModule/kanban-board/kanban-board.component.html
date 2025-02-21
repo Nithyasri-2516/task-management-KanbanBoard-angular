@@ -1,0 +1,48 @@
+<nav>
+  <button id="back" mat-button (click)="backToAssignedTasks()">Back to Assigned Tasks</button>
+  <h2>Kanban Board</h2>
+
+</nav>
+<div class="kanban-board">
+  <div class="kanban-columns">
+    <div *ngFor="let status of taskStatuses" class="kanban-column"
+         (dragover)="onDragOver($event)" 
+         (drop)="onDrop($event, status)">
+
+      <h3>{{ status }}</h3>
+
+      <div class="task-column">
+        <mat-card *ngFor="let task of filteredTasks[status]" 
+        class="task-card"
+        draggable="true"
+        (dragstart)="onDragStart($event, task)"
+        [attr.aria-label]="'Task: ' + task.taskName + ', Priority: ' + task.priority">
+
+          
+            <mat-card-title>{{ task.taskName }}</mat-card-title>
+            <mat-card-content>
+              <p>Assigned To: {{ task.assignedTo.name }}</p>
+              <p>Due Date: {{ task.dueDate | date: 'shortDate' }}</p>
+              <p [ngClass]="{
+                'high-priority': task.priority === 'High',
+                'medium-priority': task.priority === 'Medium',
+                'low-priority': task.priority === 'Low'
+              }">Priority: {{ task.priority }}</p>
+            </mat-card-content>
+       
+         
+        </mat-card>
+      </div>
+
+      
+    <div *ngIf="status === 'Done'">
+      <button mat-button  class="completed-tasks"  (click)="moveToCompletedTasks()">Move to Completed Tasks</button> 
+    </div>
+    </div>
+  </div>
+
+  
+
+</div>   
+
+
