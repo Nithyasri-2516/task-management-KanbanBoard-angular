@@ -1,0 +1,386 @@
+<nav class="navbar navbar-expand-lg navbar-light">
+  <a class="navbar-brand text-white" routerLink="/">Employee Management</a>
+  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav ms-auto">
+      <li class="nav-item">
+        <button class="btn-save" (click)="openModal()">Add Employee</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link text-white" routerLink="/assignTasks">Assign Tasks</button>
+      </li>
+      <li class="nav-item">
+        <button class="btn-logout" routerLink="/login" > Logout</button>
+      </li>
+    </ul>
+  </div>
+</nav>
+<div>
+<input type="text" name="searchbar" placeholder="Search Employee" 
+(input)="searchEmployees()" [(ngModel)]="searchValue">
+
+</div>
+
+
+<div class="container">
+
+  <!-- Employee List Section -->
+  <div class="employee-list-section">
+    <div class="card">
+      <div class="card-header">
+        <h6>Employee List</h6>
+      </div>
+
+    
+      <div class="card-body">
+        <div id="pdfContent">
+          <table class="employee-table">
+            <caption>Employee </caption>
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Name</th>
+                <th>Employee ID</th>
+                <th>Email-Id</th>
+              
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let employee of filteredEmployees; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ employee.name }}</td>
+                <td>{{ employee.empid }}</td>
+                <td>{{ employee.email }}</td>
+              </tr>
+            </tbody>
+            
+          </table>
+        </div>
+        <button class="btn-download-pdf" (click)="downloadPDF()">Download PDF</button>
+      
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Popup for Adding Employee -->
+<div class="modal" [ngClass]="{'show-modal': showModal}">
+  <div class="modal-content">
+    <button
+    class="modal-close"
+    (click)="closeModal()"
+    aria-label="Close modal"
+  >
+    &times;
+  </button>
+    <div class="modal-header">Add New Employee</div>
+    <div class="modal-body">
+      <form [formGroup]="employeeForm">
+        <div class="form-group">
+          <label for="employeeName">Name</label>
+          <input id="employeeName" type="text" formControlName="name" />
+        </div>
+        <div class="form-group">
+          <label for="employeeEmpid">Employee ID</label>
+          <input id="employeeEmpid" type="number" formControlName="empid" />
+        </div>
+        <div class="form-group">
+          <label for="employeeEmail">Email-Id</label>
+          <input id="employeeEmail" type="email" formControlName="email" />
+        </div>
+        <div class="form-group">
+          <label for="employeePassword">Password</label>
+          <input id="employeePassword" type="password" formControlName="password" />
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-reset" (click)="resetEmployeeForm()">Reset</button>
+          <button type="button" class="btn-save" *ngIf="!isEditing" (click)="save()">Save Employee</button>
+          <button type="button" class="btn-update" *ngIf="isEditing" (click)="updateEmployee()">Update Employee</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+  import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {  RouterModule } from '@angular/router';
+import { CouchdbService } from '../../../../services/couchdb.service';
+import { HttpClientModule } from '@angular/common/http';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
+export interface EmployeeModel {
+  _id?: string;
+  _rev?: string;
+  name: string;
+  empid: number;
+  email: string;
+  password: string;
+}
+@Component({
+  selector: 'app-add-employee',
+  standalone: true,
+  imports: [RouterModule, FormsModule, ReactiveFormsModule,CommonModule, HttpClientModule],
+  templateUrl: './add-employee.component.html',
+  styleUrls: ['./add-employee.component.css'],
+  providers: [CouchdbService]
+})
+export class AddEmployeeComponent implements OnInit {
+  employeeForm: FormGroup = new FormGroup({
+    name: new FormControl('', Validators.required),
+    empid: new FormControl('', Validators.required),
+    email: new FormControl('', [Validators.required, Validators.email]),
+    password: new FormControl('', [Validators.required, Validators.minLength(6)]),
+  });
+
+  employees: EmployeeModel[] = [];
+  isEditing: boolean = false;
+  editIndex: number | null = null;
+  editEmployeeId: string | null = null;
+  showModal = false;
+
+openModal() {
+  this.showModal = true;
+}
+
+closeModal() {
+  this.showModal = false;
+}
+
+private showSnackbar(message: string, type: 'success' | 'error' | 'info' = 'info') {
+  const panelClass = this.getSnackbarPanelClass(type);
+
+  this.snackBar.open(message, 'Close', {
+    duration: 5000,
+    panelClass: [panelClass],
+    horizontalPosition: 'right',
+    verticalPosition: 'top'
+  });
+}
+
+private getSnackbarPanelClass(type: 'success' | 'error' | 'info'): string {
+  switch (type) {
+    case 'success':
+      return 'success-snackbar';
+    case 'error':
+      return 'error-snackbar';
+    default: // info
+      return 'info-snackbar';
+  }
+}
+  constructor(readonly couchdbService: CouchdbService, readonly snackBar: MatSnackBar) {
+    this.createForms();
+  }
+
+  ngOnInit(): void {
+    // Fetch the employee records when the component is initialized
+    this.fetchEmployees();
+  }
+
+  createForms() {
+    this.employeeForm = new FormGroup({
+      name: new FormControl('', Validators.required),
+      empid: new FormControl('', Validators.required),
+      email: new FormControl('', [Validators.required, Validators.email]),
+      password: new FormControl('', [Validators.required, Validators.minLength(6)]),
+    });
+  }
+  fetchEmployees() {
+    // Fetch the employee records from the database
+    this.couchdbService.queryDocuments().subscribe({
+      next: (response) => {
+        console.log(response);
+        
+        if (response.rows) {
+          this.employees = response.rows.map((row: any) => row.value);
+          console.log("employees", this.employees);
+          this.filteredEmployees = [...this.employees];
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching employees from CouchDB:', error);
+      }
+      // complete handler is optional if you don't need it
+    });
+  }
+ 
+  save() {
+    if (this.employeeForm.valid) {
+      const savedEmployee: EmployeeModel = this.employeeForm.value;
+  
+      // Check if empid is unique in the table (only local)
+      if (this.isEmpidUnique(savedEmployee.empid)) {
+        this.showSnackbar('Employee ID must be unique!', 'error');
+        return;
+      }
+  
+      if (!this.isValidEmail(savedEmployee.email)) {
+        this.showSnackbar('Invalid email format', 'error');
+        return;
+      }
+  
+      if (!this.isValidPassword(savedEmployee.password)) {
+        this.showSnackbar('Password must be at least 6 characters long', 'error');
+        return;
+      }
+  
+      savedEmployee._id = "employee_2_" + `${savedEmployee.empid}`;
+      this.couchdbService.createDocument(savedEmployee).subscribe({
+        next: (response) => {
+          const savedEmployeeWithId: EmployeeModel = {
+            ...savedEmployee,
+            _id: response.id,
+            _rev: response.rev,
+          };
+  
+          this.employees.push(savedEmployeeWithId);
+          this.showSnackbar('Employee saved successfully!', 'success');
+          this.resetEmployeeForm();
+          this.closeModal();
+        },
+        error: (error) => {
+          console.error('Error saving employee to CouchDB:', error);
+          this.showSnackbar('Error saving employee. empid must be unique', 'error');
+        }
+      });
+    } else {
+      this.showSnackbar('Form is not valid. Please check the fields.', 'error');
+    }}
+
+  isEmpidUnique(empid: number): boolean {
+    return this.employees.some(employee => employee.empid === empid);
+  }
+
+  isValidEmail(email: string): boolean {
+    const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;   
+    return emailPattern.test(email);
+  }
+
+  isValidPassword(password: string): boolean {
+    const minLength = password.length >= 9;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasDigit = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    return minLength && hasUpperCase && hasLowerCase && hasDigit && hasSpecialChar;
+  }
+  
+
+  editEmployee(index: number) {
+    if (index !== null) {
+      const employeeToEdit = this.employees[index];
+      this.employeeForm.patchValue(employeeToEdit);
+      this.isEditing = true;
+      this.editIndex = index;
+      this.editEmployeeId = employeeToEdit._id ?? null;
+    }
+  }
+
+  updateEmployee() {
+    if (this.employeeForm.valid && this.editIndex !== null && this.editEmployeeId !== null) {
+      const updatedEmployee: EmployeeModel = this.employeeForm.value;
+      updatedEmployee['_id'] = this.editEmployeeId;
+      updatedEmployee['_rev'] = this.employees[this.editIndex]._rev;
+
+      this.couchdbService.updateDocument(updatedEmployee).subscribe({
+        next: (response) => {
+          if (this.editIndex !== null) {
+            this.employees[this.editIndex] = {
+              ...updatedEmployee,
+              _rev: response.rev,
+            };
+          }
+          this.showSnackbar('Employee updated successfully!', 'success');
+          this.resetEmployeeForm();
+        },
+        error: (error) => {
+          console.error('Error updating employee in CouchDB:', error);
+          this.showSnackbar('Error updating employee', 'error');
+        }
+      });
+    } else {
+      this.showSnackbar('Form is not valid or no employee selected for editing.', 'error');
+    }
+  }
+
+  deleteEmployee(index: number) {
+    if (this.editIndex !== null) {
+      const employeeToDelete = this.employees[index];
+      const employeeId = employeeToDelete._id;
+      const employeeRev = employeeToDelete._rev;
+
+      if (employeeId && employeeRev) {
+        this.couchdbService.deleteDocument(employeeId, employeeRev).subscribe({
+          next: () => {
+            this.employees.splice(index, 1);
+            this.showSnackbar('Employee deleted successfully!', 'success');
+            this.resetEmployeeForm();
+          },
+          error: (error) => {
+            console.error('Error deleting employee from CouchDB:', error);
+            this.showSnackbar('Error deleting employee', 'error');
+          }
+        });
+      } else {
+        this.showSnackbar('Employee does not have valid _id or _rev.', 'error');
+      }
+    }
+  }
+
+  
+  resetEmployeeForm() {
+    this.employeeForm.reset();
+    this.isEditing = false;
+    this.editIndex = null;
+    this.editEmployeeId = null;
+  }
+
+  downloadPDF(): void {
+    const data = document.getElementById('pdfContent'); 
+    if (data) {
+      html2canvas(data).then(canvas => {
+        const imgWidth = 208; // PDF page width in mm
+        // const pageHeight = 295; // PDF page height in mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        let position = 0; // Top margin on the PDF page
+
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        pdf.save('employee-details.pdf'); // Save PDF with this filename
+        alert('pdf downloaded')
+      });
+    } else {
+      console.error('Element not found');
+    }
+  }
+
+  searchValue: string = '';
+filteredEmployees: any[] = [];
+
+searchEmployees() {
+  console.log("Searching for employee:", this.searchValue);
+
+  if (this.searchValue.trim() === '') {
+    this.filteredEmployees = [...this.employees]; // Show all employees when search is empty
+    return;
+  }
+
+  this.couchdbService.searchEmployees(this.searchValue).subscribe({
+    next: (response: any) => {
+      console.log(response);
+      this.filteredEmployees = response.rows.map((e: any) => e.doc) || [];
+    },
+    error: (error: any) => {
+      console.error("Error searching employees:", error);
+    }
+  });
+}
+}
+

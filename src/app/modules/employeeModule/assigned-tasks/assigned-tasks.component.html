@@ -1,31 +1,68 @@
-
 <nav>
-  <button id="back" (click)="backtohome()"> Back</button>
+  <button id="back" (click)="backtohome()">
+    <svg class="back-icon" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+    </svg>
+  </button>
   <h2>Assigned Tasks</h2>
 </nav>
+
 <div class="assigned-tasks-container">
-    <h2>Assigned Tasks</h2>
-  
-    <!-- Check if there are assigned tasks -->
-    <div *ngIf="assignedTasks.length > 0; else noTasks">
-      <div *ngFor="let task of assignedTasks" class="task-card">
-        <mat-card>
-          <mat-card-title>{{ task.taskName }}</mat-card-title>
-          <mat-card-content>
-            <p>Assigned To: {{ task.assignedTo.name }}</p>
-            <p>Priority: {{ task.priority }}</p>
-            <p>Due Date: {{ task.dueDate | date: 'shortDate' }}</p>
-            
-            <!-- "Start Kanban" button -->
-            <button mat-button color="primary" (click)="startKanban(task)">Start Kanban</button>
-          </mat-card-content>
-        </mat-card>
-      </div>
+
+    <!-- Error message -->
+    <div *ngIf="errorMessage" class="error-message">
+      <p>{{ errorMessage }}</p>
     </div>
-  
-    <!-- If no tasks are assigned -->
-    <ng-template #noTasks>
-      <p>No tasks assigned yet.</p>
-    </ng-template>
+  <div class="task-controls">
+    <!-- Search Input -->
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search Tasks</mat-label>
+      <input matInput placeholder="Search by task name" [(ngModel)]="searchQuery" (input)="applyFilters()">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <!-- Priority Filter -->
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Priority</mat-label>
+      <mat-select [(value)]="selectedPriority" (selectionChange)="applyFilters()">
+        <mat-option value="all">All Priorities</mat-option>
+        <mat-option value="high">High</mat-option>
+        <mat-option value="medium">Medium</mat-option>
+        <mat-option value="low">Low</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Sort Options -->
+    <mat-form-field appearance="outline" class="sort-field">
+      <mat-label>Sort By</mat-label>
+      <mat-select [(value)]="sortOption" (selectionChange)="applyFilters()">
+        <mat-option value="dueDateAsc">Due Date (Oldest First)</mat-option>
+        <mat-option value="dueDateDesc">Due Date (Newest First)</mat-option>
+        <mat-option value="priority">Priority</mat-option>
+        <mat-option value="nameAsc">Name (A-Z)</mat-option>
+        <mat-option value="nameDesc">Name (Z-A)</mat-option>
+      </mat-select>
+    </mat-form-field>
   </div>
   
+  <div *ngFor="let task of filteredTasks" class="task-card">
+    <mat-card [class]="getDueDateClass(task)">
+      <mat-card-title>{{ task.taskName }}</mat-card-title>
+      <mat-card-content>
+        <p>Priority: <span [class]="'priority-' + task.priority.toLowerCase()">{{ task.priority }}</span></p>
+        <p class="due-date" [class]="getDueDateClass(task) + '-text'">
+          Due Date: {{ task.dueDate | date: 'mediumDate' }}
+          <span class="warning-message" *ngIf="getDueDateWarning(task)">
+            {{ getDueDateWarning(task) }}
+          </span>
+        </p>
+        <button mat-button color="primary" (click)="startKanban(task)">
+          Start Kanban
+        </button>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <ng-template #noTasks>
+    <p>No tasks found matching your criteria.</p>
+  </ng-template>
+</div>

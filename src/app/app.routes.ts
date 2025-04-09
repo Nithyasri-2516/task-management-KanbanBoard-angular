@@ -7,7 +7,6 @@ import { ViewCustomizationComponent } from './modules/employeeModule/view-custom
 import { AssignTasksComponent } from './modules/adminModule/assign-tasks/assign-tasks.component';
 import { AssignedTasksComponent } from './modules/employeeModule/assigned-tasks/assigned-tasks.component';
 import { KanbanBoardComponent } from './modules/employeeModule/kanban-board/kanban-board.component';
-import { ViewAssignedTasksComponent } from './modules/adminModule/view-assigned-tasks/view-assigned-tasks.component';
 
 
 export const routes: Routes = [
@@ -21,7 +20,7 @@ export const routes: Routes = [
     { path: 'view-customization', component: ViewCustomizationComponent },
     {path:'assigned-tasks',component:AssignedTasksComponent},
     {path:'kanban-board',component:KanbanBoardComponent},
-    {path:'view-assigned-tasks',component:ViewAssignedTasksComponent}
+    
 
    
     

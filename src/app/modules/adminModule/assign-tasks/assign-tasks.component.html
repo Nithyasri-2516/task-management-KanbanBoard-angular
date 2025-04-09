@@ -1,9 +1,8 @@
-
 <nav>
-<button id="back" (click)="backtoadminpage()" > Back </button>
-<button (click)="viewAssigned()" id="view-assigned-tasks">View Assigned tasks</button>
-
+  <button id="back" (click)="backtoadminpage()">Back</button>
+ <h2 style="text-align: center;">Assign Tasks</h2>
 </nav>
+
 <mat-card class="task-card">
   <mat-card-title>Assign Task</mat-card-title>
   <form [formGroup]="taskForm" (ngSubmit)="onSubmit()">
@@ -16,18 +15,18 @@
       <mat-label>Assign To</mat-label>
       <mat-select formControlName="assignedTo">
         <mat-option *ngFor="let employee of employees" [value]="employee">
-          {{ employee.name }} 
+          {{ employee.name }}
         </mat-option>
       </mat-select>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Due Date</mat-label>
-      <input matInput [matDatepicker]="picker" formControlName="dueDate" required />
+      <input matInput [matDatepicker]="picker" formControlName="dueDate" [min]="minDate" required />
       <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
       <mat-datepicker #picker></mat-datepicker>
     </mat-form-field>
-
+    
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Priority</mat-label>
       <mat-select formControlName="priority">
@@ -37,15 +36,36 @@
       </mat-select>
     </mat-form-field>
 
-    
-
-    <button mat-raised-button  type="submit" [disabled]="taskForm.invalid">
-      Assign Task
-    </button>
-
-
-    
+    <button mat-raised-button type="submit" [disabled]="taskForm.invalid">Assign Task</button>
   </form>
 </mat-card>
 
+<!-- Display Assigned Tasks -->
+<mat-card class="assigned-tasks-card">
+  <mat-card-title>Assigned Tasks</mat-card-title>
+  <table mat-table [dataSource]="assignedTasks" class="mat-elevation-z8">
+    <caption> </caption>
+    <ng-container matColumnDef="taskName">
+     <th mat-header-cell *matHeaderCellDef> Task Name </th>
+      <td mat-cell *matCellDef="let task"> {{ task.taskName }} </td>
+    </ng-container>
 
+    <ng-container matColumnDef="assignedTo">
+      <th mat-header-cell *matHeaderCellDef> Assigned To </th>
+      <td mat-cell *matCellDef="let task"> {{ task.assignedTo?.name }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="dueDate">
+      <th mat-header-cell *matHeaderCellDef> Due Date </th>
+      <td mat-cell *matCellDef="let task"> {{ task.dueDate | date }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="priority">
+      <th mat-header-cell *matHeaderCellDef> Priority </th>
+      <td mat-cell *matCellDef="let task"> {{ task.priority }} </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+</mat-card>

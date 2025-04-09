@@ -1,12 +1,12 @@
 /* Navigation Bar */
 nav {
-  background-color: #eed12d; /* Yellow Theme */
+  background-color: #3f51b5; /* Indigo theme */
   color: white;
   padding: 16px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
   border-radius: 8px;
   position: relative;
 }
@@ -14,164 +14,487 @@ nav {
 /* Navigation Heading */
 nav h2 {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1.6rem;
+  font-weight: 700;
   text-align: center;
   flex-grow: 1;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+/* Icon Button Styles */
+#back.mat-icon-button {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  transition: all 0.3s ease;
+  margin-right: 8px;
 }
 
-/* Back Button */
-#back {
-  background-color: #fff;
-  color: #333;
-  font-weight: bold;
+#back.mat-icon-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(-2px);
+}
+
+#back.mat-icon-button mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+}
+
+
+/* Completed Tasks Button in Nav */
+#complete {
+  background-color: white;
+  color: #3f51b5;
+  font-weight: 600;
   padding: 8px 16px;
-  border-radius: 5px;
-  transition: background 0.3s ease-in-out, transform 0.2s ease-in-out;
+  border-radius: 6px;
+  border: 1px solid rgba(63, 81, 181, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  margin-left: 12px;
+  min-width: 180px; /* Prevents button width from changing when text changes */
 }
 
-#back:hover {
-  background-color: #c7aa23; /* Darker Yellow */
-  transform: scale(1.05);
+#complete:hover {
+  background-color: #303f9f;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  border-color: transparent;
 }
 
-/* Responsive Design */
+/* Active state when completed tasks are shown */
+#complete.active {
+  background-color: #303f9f;
+  color: white;
+}
+
+/* Nav buttons container */
+.nav-buttons {
+  display: flex;
+  align-items: center;
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
   nav {
     flex-direction: column;
-    align-items: center;
+    gap: 12px;
+  }
+  
+  .nav-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  #back, #complete {
+    flex: 1;
     text-align: center;
+    margin: 0;
   }
-
-  #back {
-    margin-bottom: 10px;
-  }
-
+  
   nav h2 {
-    font-size: 1.2rem;
+    order: -1;
+    width: 100%;
+    margin-bottom: 8px;
   }
 }
 
+/* Animation for the text change */
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+#complete span {
+  display: inline-block;
+  animation: fadeInOut 0.3s ease;
+}
 
 /* Kanban Board */
 .kanban-board {
-  padding: 20px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  background-color: #f5f5f5;
+  min-height: calc(100vh - 120px);
 }
 
 .kanban-columns {
   display: flex;
-  gap: 20px;
+  gap: 24px;
   justify-content: center;
   flex-wrap: wrap;
   width: 100%;
+  max-width: 1400px;
 }
 
 /* Kanban Columns */
 .kanban-column {
   flex: 1;
-  min-width: 280px;
-  max-width: 350px;
-  padding: 10px;
-  background-color: #f4f4f4;
-  border: 2px dashed #eed12d;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease-in-out;
+  min-width: 300px;
+  max-width: 380px;
+  padding: 16px;
+  background-color: white;
+  border: 2px solid #7986cb; /* Lighter indigo */
+  border-radius: 10px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.kanban-column:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  border-color: #3f51b5;
 }
 
 .kanban-column h3 {
   text-align: center;
-  font-size: 18px;
-  margin-bottom: 10px;
+  font-size: 1.25rem;
+  margin-bottom: 16px;
+  color: #3f51b5;
+  padding-bottom: 8px;
+  border-bottom: 2px dashed #7986cb;
 }
 
 .task-column {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  min-height: 100px;
 }
 
 /* Task Card */
 .task-card {
-  margin: 10px 0;
+  margin: 8px 0;
   cursor: grab;
-  transition: transform 0.2s ease-in-out;
+  transition: all 0.3s ease;
+  animation: fadeIn 0.3s ease-out forwards;
 }
 
 .task-card:active {
   cursor: grabbing;
-  transform: scale(1.05);
+  transform: scale(1.02) rotate(1deg);
 }
 
 /* Buttons */
 .completed-tasks, button.mat-button {
-  margin-top: 10px;
-  background-color: #eed12d;
+  margin-top: 16px;
+  background-color: #3f51b5;
   color: white;
-  font-weight: bold;
+  font-weight: 600;
   width: 100%;
   border: none;
-  padding: 10px;
-  border-radius: 5px;
-  transition: background 0.3s ease-in-out;
+  padding: 12px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .completed-tasks:hover, button.mat-button:hover {
-  background-color: #c7aa23;
+  background-color: #303f9f;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Material Card */
 mat-card {
-  border-radius: 12px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 16px;
-  margin-bottom: 16px;
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border-radius: 10px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 18px;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+  background-color: white;
+  border-left: 4px solid #7986cb;
 }
 
 mat-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.15);
+  border-left-color: #3f51b5;
 }
 
 /* Material Card Title */
 mat-card-title {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #3f51b5;
   margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 mat-card-content p {
   font-size: 0.95rem;
   color: #555;
-  margin: 4px 0;
+  margin: 6px 0;
+  line-height: 1.4;
 }
 
 mat-card-content p:first-child {
-  font-weight: 600;
+  font-weight: 500;
 }
 
 mat-card-content p:nth-child(3) {
-  font-weight: bold;
-  color: #d32f2f;
+  font-weight: 600;
 }
 
 /* Priority-based Styling */
 .high-priority {
-  color: #d32f2f;
-  font-weight: bold;
+  color: #e53935;
+  font-weight: 600;
 }
 
 .medium-priority {
-  color: #ff9800;
-  font-weight: bold;
+  color: #fb8c00;
+  font-weight: 600;
 }
 
 .low-priority {
-  color: #388e3c;
-  font-weight: bold;
+  color: #43a047;
+  font-weight: 600;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(3px);
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: white;
+  padding: 24px;
+  border-radius: 12px;
+  width: 85%;
+  max-width: 650px;
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+  max-height: 85vh;
+  border: none;
+  position: relative;
+}
+
+/* Completed Task List Style */
+.completed-tasks-list {
+  margin-top: 16px;
+  max-height: 65vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Completed Tasks Title */
+h3 {
+  color: #3f51b5;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Close Button */
+.modal-close-btn {
+  margin-top: 24px;
+  background-color: #3f51b5;
+  color: white;
+  font-weight: 600;
+  padding: 10px 24px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.modal-close-btn:hover {
+  background-color: #303f9f;
+  transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  nav {
+    padding: 12px 16px;
+  }
+  
+  nav h2 {
+    font-size: 1.3rem;
+  }
+  
+  .kanban-board {
+    padding: 16px;
+  }
+  
+  .kanban-column {
+    min-width: 100%;
+  }
+  
+  .modal-content {
+    width: 95%;
+    padding: 16px;
+  }
+}
+
+/* Animation for task cards */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #7986cb;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f51b5;
+}
+
+
+/* (Previous styles remain the same) */
+
+/* Add these new styles */
+.confirmation-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.confirmation-dialog {
+  background-color: white;
+  padding: 24px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.confirmation-dialog h3 {
+  margin-top: 0;
+  color: #3f51b5;
+}
+
+.dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.dialog-buttons button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.dialog-buttons button:first-child {
+  background-color: #3f51b5;
+  color: white;
+}
+
+.dialog-buttons button:first-child:hover {
+  background-color: #303f9f;
+}
+
+.dialog-buttons button:last-child {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.dialog-buttons button:last-child:hover {
+  background-color: #e0e0e0;
+}
+
+.kanban-column.drag-over {
+  border: 2px dashed #3f51b5;
+  background-color: rgba(63, 81, 181, 0.05);
+  transform: scale(1.02);
+}
+
+/* Loading and Error States */
+.loading-overlay, .error-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 1000;
+}
+
+.error-overlay {
+  text-align: center;
+  padding: 2rem;
+}
+
+.error-icon {
+  font-size: 3rem;
+  width: 3rem;
+  height: 3rem;
+  color: #f44336;
+  margin-bottom: 1rem;
+}
+
+.cache-notice {
+  font-style: italic;
+  color: #666;
+  margin-top: 1rem;
+}
+
+/* Empty States */
+.empty-state {
+  text-align: center;
+  padding: 1rem;
+  color: #666;
+}
+
+.empty-state mat-icon {
+  font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Header Controls */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }

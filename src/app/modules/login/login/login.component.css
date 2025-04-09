@@ -1,91 +1,135 @@
-/* Container */
+/* Login Container */
 .login-container {
-    width: 90%; /* Dynamic width for responsiveness */
-    max-width: 300px; /* Restricts maximum width */
-    margin: 50px auto;
-    padding: 20px;
-    border: 1px solid #eed12d;
-    padding-right: 40px;
-    border-radius: 8px;
-    background-color: #fff9db;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  /* Container for centering the image */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 2rem;
+}
+
+/* Login Form */
+.login-container form {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  transform: translateY(0);
+  transition: all 0.3s ease;
+}
+
+.login-container form:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+/* Logo */
 #logo-img {
-    display: block; /* Ensures the image is treated as a block-level element */
-    margin-left: auto; /* Automatically adjust left margin */
-    margin-right: auto; /* Automatically adjust right margin */
-    /* Optional: If you need vertical centering, you can use flexbox on the parent container */
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+#logo-img:hover {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* Heading */
+.login-container h2 {
+  color: #3f51b5;
+  margin-bottom: 1.8rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #555;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+/* Input Fields */
+.form-control {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: #f8f9fa;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #3f51b5;
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.1);
+}
+
+/* Login Button */
+.btn {
+  width: 100%;
+  padding: 0.9rem;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(to right, #3f51b5, #2196f3);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+  box-shadow: 0 4px 8px rgba(63, 81, 181, 0.2);
+}
+
+.btn:hover:not([disabled]) {
+  background: linear-gradient(to right, #3949ab, #1976d2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(63, 81, 181, 0.3);
+}
+
+.btn:active:not([disabled]) {
+  transform: translateY(0);
+}
+
+.btn[disabled] {
+  background: #b0bec5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .login-container {
+    padding: 1rem;
   }
   
-  /* Header */
+  .login-container form {
+    padding: 1.5rem;
+  }
+  
   .login-container h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #eed12d;
+    font-size: 1.5rem;
   }
-  
-  /* Form Group */
-  .form-group {
-    margin-bottom: 15px;
-  }
-  
-  /* Labels */
-  label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
-    font-weight: bold;
-    color: #333;
-  }
-  
-  /* Input Fields */
-  input.form-control,
-  select.form-control {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid rgb(238, 209, 45);
-    border-radius: 4px;
-    outline: none;
-    background-color: #fff;
-    transition: border-color 0.3s, box-shadow 0.3s;
-  }
-  
-  /* Focus Effect for Inputs */
-  input.form-control:focus,
-  select.form-control:focus {
-    border-color: #d4b715;
-    box-shadow: 0 0 5px #eed12d;
-  }
-  
-  /* Error Highlighting */
-  input.form-control.ng-invalid.ng-touched {
-    border-color: red;
-    box-shadow: 0 0 5px red;
-  }
-  
-  /* Button */
-  .btn {
-    width: 100%;
-    padding: 10px;
-    background-color: #eed12d;
-    border: none;
-    border-radius: 4px;
-    color: #333;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s, opacity 0.3s;
-  }
-  
-  /* Hover Effect for Button */
-  .btn:hover {
-    background-color: #d4b715;
-  }
-  
-  /* Disabled Button */
-  .btn:disabled {
-    background-color: #f0e68c; /* Light yellow */
-    cursor: not-allowed;
-    opacity: 0.7;
-  }
-  
+}
+
+/* styles.css or login.component.css */
+.snackbar-success {
+  background-color: #4caf50;
+  color: white;
+}
+
+.snackbar-error {
+  background-color: #f44336;
+  color: white;
+}

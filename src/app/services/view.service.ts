@@ -1,76 +1,66 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ViewService {
-  private couchDBUrl = 'https://192.168.57.185:5984/demo_24'; // CouchDB URL
-  private userName = 'd_couchdb';
-  private password = 'Welcome#2';
+  readonly couchDBUrl = 'https://192.168.57.185:5984/demo_24'; // CouchDB URL
+  readonly userName = 'd_couchdb';
+  readonly password = 'Welcome#2';
 
-  private headers = new HttpHeaders({
+  readonly headers = new HttpHeaders({
     'Authorization': 'Basic ' + btoa(this.userName + ':' + this.password),
     'Content-Type': 'application/json',
   });
 
-  constructor(private http: HttpClient) {}
+  constructor(readonly http: HttpClient) {}
 
-  // Add Task to CouchDB
-  addTask(task: any): Observable<any> {
-    return this.http.post<any>(this.couchDBUrl, task, { headers: this.headers }).pipe(
-      catchError(this.handleError)  // Handle errors gracefully
-    );
+  // Get all personal tasks
+  getTasks() {
+    return this.http.get<any>(`${this.couchDBUrl}/_design/task/_view/by_status`, { headers: this.headers })
+      .pipe(
+        map(response => response.rows.map((row: any) => row.value))
+      );
   }
 
-  // Update Task in CouchDB
-  updateTask(task: any): Observable<any> {
+
+  private generateUUID(): string {
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+    return Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('');
+  }
+  
+  
+  // Add a new personal task
+  addTask(task: any) {
+    const taskToAdd = {
+      _id: `personaltask_2_${this.generateUUID()}`,
+      ...task,
+      type: 'personaltask',
+      createdAt: new Date().toISOString()
+    };
+    delete taskToAdd._id;
+    delete taskToAdd._rev;
+    
+    return this.http.post<any>(this.couchDBUrl, taskToAdd, { headers: this.headers });
+  }
+
+  // Update an existing personal task
+  updateTask(task: any) {
     if (!task._id || !task._rev) {
-      return throwError('Task ID or Revision (_rev) is missing');
+      throw new Error('Cannot update task without _id and _rev');
     }
-
-    const url = `${this.couchDBUrl}/${task._id}`;
-    return this.http.put<any>(url, task, { headers: this.headers }).pipe(
-      catchError((error) => {
-        if (error.status === 409) {
-          console.error('Conflict error: Revision is outdated. Fetching latest task version.');
-
-          // If conflict occurs, fetch the latest task and retry the update
-          return this.getTaskById(task._id).pipe(
-            switchMap((latestTask) => {
-              // Update the task revision and retry the update with the new revision
-              task._rev = latestTask._rev;
-              return this.updateTask(task);  // Retry update
-            })
-          );
-        }
-        return this.handleError(error);  // Handle other errors
-      })
-    );
+    return this.http.put<any>(`${this.couchDBUrl}/${task._id}`, task, { headers: this.headers });
   }
 
-  // Delete Task from CouchDB
-  deleteTask(id: string, rev: string): Observable<any> {
-    const url = `${this.couchDBUrl}/${id}?rev=${rev}`;
-    return this.http.delete<any>(url, { headers: this.headers }).pipe(
-      catchError(this.handleError)  // Handle errors gracefully
-    );
+  // Delete a personal task
+  deleteTask(id: string, rev: string) {
+    if (!id || !rev) {
+      throw new Error('Cannot delete task without _id and _rev');
+    }
+    return this.http.delete(`${this.couchDBUrl}/${id}?rev=${rev}`, { headers: this.headers });
   }
 
-  // Get Task by ID (to handle revision conflicts)
-  getTaskById(id: string): Observable<any> {
-    const url = `${this.couchDBUrl}/${id}`;
-    return this.http.get<any>(url, { headers: this.headers }).pipe(
-      catchError(this.handleError)  // Handle errors gracefully
-    );
-  }
-
-  // Error handling function
-  private handleError(error: any): Observable<any> {
-    console.error('Error in ViewService:', error);
-    // Handle error here (you can show a user-friendly message in UI if needed)
-    return throwError(error);  // Propagate the error for further handling if necessary
-  }
 }

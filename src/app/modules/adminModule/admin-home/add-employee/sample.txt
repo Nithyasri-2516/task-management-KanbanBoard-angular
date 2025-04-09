@@ -1,0 +1,460 @@
+<nav class="navbar navbar-expand-lg navbar-light">
+  <a class="navbar-brand text-white" routerLink="/">Employee Management</a>
+  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav ms-auto">
+      <li class="nav-item">
+        <button class="btn-save" (click)="openModal()">Add Employee</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link text-white" routerLink="/assignTasks">Assign Tasks</button>
+      </li>
+      <li class="nav-item">
+        <button class="btn-logout" routerLink="/login"> Logout</button>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div class="search-container">
+  <input type="text" name="searchbar" placeholder="Search Employee" 
+         (input)="searchEmployees()" [(ngModel)]="searchValue" class="search-input">
+</div>
+
+<div class="container">
+  <!-- Employee List Section -->
+  <div class="employee-list-section">
+    <div class="card">
+      <div class="card-header">
+        <h6>Employee List</h6>
+      </div>
+      <div class="card-body">
+        <div id="pdfContent">
+          <angular-slickgrid
+          gridId="employeeGrid"
+          [columnDefinitions]="columnDefinitions"
+          [gridOptions]="gridOptions"
+          [dataset]="dataset"
+          (onAngularGridCreated)="angularGridReady($event)">
+        </angular-slickgrid>
+
+        </div>
+        <button class="btn-download-pdf" (click)="downloadPDF()">Download PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Popup for Adding Employee -->
+<div class="modal" [ngClass]="{'show-modal': showModal}">
+  <div class="modal-content">
+    <button class="modal-close" (click)="closeModal()" aria-label="Close modal">
+      &times;
+    </button>
+    <div class="modal-header">Add New Employee</div>
+    <div class="modal-body">
+      <form [formGroup]="employeeForm">
+        <div class="form-group">
+          <label for="employeeName">Name</label>
+          <input id="employeeName" type="text" formControlName="name" />
+          <div *ngIf="employeeForm.get('name')?.invalid && employeeForm.get('name')?.touched" class="error-message">
+            Name is required
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="employeeEmpid">Employee ID</label>
+          <input id="employeeEmpid" type="number" formControlName="empid" />
+          <div *ngIf="employeeForm.get('empid')?.invalid && employeeForm.get('empid')?.touched" class="error-message">
+            Employee ID is required
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="employeeEmail">Email-Id</label>
+          <input id="employeeEmail" type="email" formControlName="email" />
+          <div *ngIf="employeeForm.get('email')?.invalid && employeeForm.get('email')?.touched" class="error-message">
+            Valid email is required
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="employeePassword">Password</label>
+          <input id="employeePassword" type="password" formControlName="password" />
+          <div *ngIf="employeeForm.get('password')?.invalid && employeeForm.get('password')?.touched" class="error-message">
+            Password must be at least 6 characters
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-reset" (click)="resetEmployeeForm()">Reset</button>
+          <button type="button" class="btn-save" *ngIf="!isEditing" (click)="save()" [disabled]="employeeForm.invalid">Save Employee</button>
+          <button type="button" class="btn-update" *ngIf="isEditing" (click)="updateEmployee()" [disabled]="employeeForm.invalid">Update Employee</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { CouchdbService } from '../../../../services/couchdb.service';
+import { HttpClientModule } from '@angular/common/http';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { AngularSlickgridModule, Column, GridOption, AngularGridInstance } from 'angular-slickgrid';
+import { SlickEventData } from 'angular-slickgrid';
+
+export interface EmployeeModel {
+  _id?: string;
+  _rev?: string;
+  name: string;
+  empid: number;
+  email: string;
+  password: string;
+}
+
+@Component({
+  selector: 'app-add-employee',
+  standalone: true,
+  imports: [
+    RouterModule,
+    FormsModule,
+    ReactiveFormsModule,
+    CommonModule,
+    HttpClientModule,
+    AngularSlickgridModule
+  ],
+  templateUrl: './add-employee.component.html',
+  styleUrls: ['./add-employee.component.css'],
+  providers: [CouchdbService]
+})
+export class AddEmployeeComponent implements OnInit {
+  employeeForm: FormGroup;
+  employees: EmployeeModel[] = [];
+  filteredEmployees: any[] = [];
+  isEditing: boolean = false;
+  editIndex: number | null = null;
+  editEmployeeId: string | null = null;
+  showModal = false;
+  searchValue: string = '';
+  angularGrid!: AngularGridInstance;
+  gridOptions: GridOption = {};
+  columnDefinitions: Column[] = [];
+  dataset: any[] = [];
+
+  constructor(
+    private readonly couchdbService: CouchdbService,
+    private readonly snackBar: MatSnackBar
+  ) {
+    this.employeeForm = new FormGroup({
+      name: new FormControl('', Validators.required),
+      empid: new FormControl('', [Validators.required, Validators.pattern(/^[0-9]+$/)]),
+      email: new FormControl('', [Validators.required, Validators.email]),
+      password: new FormControl('', [Validators.required, Validators.minLength(6)])
+    });
+  }
+
+  ngOnInit(): void {
+    this.initializeGrid();
+    this.fetchEmployees();
+  }
+
+  initializeGrid(): void {
+    this.columnDefinitions = [
+      {
+        id: 'sno',
+        name: 'S.No',
+        field: 'sno',
+        width: 70,
+        sortable: true,
+        formatter: (row, cell, value) => `${value}.`
+      },
+      {
+        id: 'name',
+        name: 'Name',
+        field: 'name',
+        width: 150,
+        sortable: true,
+        filterable: true
+      },
+      {
+        id: 'empid',
+        name: 'Employee ID',
+        field: 'empid',
+        width: 120,
+        sortable: true,
+        filterable: true
+      },
+      {
+        id: 'email',
+        name: 'Email',
+        field: 'email',
+        width: 200,
+        sortable: true,
+        filterable: true
+      },
+      {
+        id: 'actions',
+        name: 'Actions',
+        field: 'actions',
+        width: 150,
+        formatter: (row, cell, value, columnDef, dataContext) => {
+          return `
+            <button class="btn-edit" data-id="${dataContext._id}">
+              <i class="fa fa-edit"></i> Edit
+            </button>
+            <button class="btn-delete" data-id="${dataContext._id}">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+          `;
+        },
+        sortable: false,
+        filterable: false
+      }
+    ];
+
+    this.gridOptions = {
+      enableAutoResize: true,
+      enableCellNavigation: true,
+      enableColumnReorder: false,
+      autoHeight: false,
+      rowHeight: 40,
+      headerRowHeight: 40,
+      enableFiltering: true,
+      enablePagination: true,
+      pagination: {
+        pageSize: 10,
+        pageSizes: [5, 10, 20, 50]
+      }
+    };
+  }
+
+  angularGridReady(angularGrid: any): void {
+    // Use `any` temporarily to inspect the emitted event and ensure it contains all necessary properties
+    this.angularGrid = angularGrid;
+    
+    // Check if angularGrid contains the required properties
+    if (!this.angularGrid.dataView) {
+      this.angularGrid.dataView = {} as any;
+    }
+    if (!this.angularGrid.slickGrid) {
+      this.angularGrid.slickGrid = {} as any;
+    }
+
+    // Subscribe to click events with proper typing
+    this.angularGrid.slickGrid.onClick.subscribe((e: SlickEventData, args: any) => {
+      const target = e.target as HTMLElement;
+      const button = target.closest('button');
+      
+      if (button?.classList.contains('btn-edit')) {
+        const employeeId = button.getAttribute('data-id');
+        if (employeeId) {
+          this.handleEdit(employeeId);
+        }
+      } else if (button?.classList.contains('btn-delete')) {
+        const employeeId = button.getAttribute('data-id');
+        if (employeeId) {
+          this.handleDelete(employeeId);
+        }
+      }
+    });
+  }
+
+  fetchEmployees(): void {
+    this.couchdbService.queryDocuments().subscribe({
+      next: (response) => {
+        if (response.rows) {
+          this.employees = response.rows.map((row: any) => row.value);
+          this.prepareGridData(this.employees);
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching employees:', error);
+        this.showSnackbar('Failed to fetch employees', 'error');
+      }
+    });
+  }
+
+  prepareGridData(employees: EmployeeModel[]): void {
+    this.dataset = employees.map((employee, index) => ({
+      ...employee,
+      sno: index + 1,
+      actions: ''
+    }));
+  }
+
+  openModal(): void {
+    this.showModal = true;
+  }
+
+  closeModal(): void {
+    this.showModal = false;
+    this.resetEmployeeForm();
+  }
+
+  save(): void {
+    if (this.employeeForm.invalid) {
+      this.showSnackbar('Please fill all required fields correctly', 'error');
+      return;
+    }
+
+    const savedEmployee: EmployeeModel = this.employeeForm.value;
+    
+    if (!this.isEmpidUnique(savedEmployee.empid)) {
+      this.showSnackbar('Employee ID must be unique', 'error');
+      return;
+    }
+
+    savedEmployee._id = `employee_${Date.now()}`;
+    this.couchdbService.createDocument(savedEmployee).subscribe({
+      next: (response) => {
+        const savedEmployeeWithId: EmployeeModel = {
+          ...savedEmployee,
+          _id: response.id,
+          _rev: response.rev,
+        };
+        this.employees.push(savedEmployeeWithId);
+        this.prepareGridData(this.employees);
+        this.showSnackbar('Employee saved successfully', 'success');
+        this.closeModal();
+      },
+      error: (error) => {
+        console.error('Error saving employee:', error);
+        this.showSnackbar('Failed to save employee', 'error');
+      }
+    });
+  }
+
+  handleEdit(employeeId: string): void {
+    const employee = this.employees.find(e => e._id === employeeId);
+    if (employee) {
+      this.employeeForm.patchValue({
+        name: employee.name,
+        empid: employee.empid,
+        email: employee.email,
+        password: employee.password
+      });
+      this.isEditing = true;
+      this.editEmployeeId = employeeId;
+      this.openModal();
+    }
+  }
+
+  updateEmployee(): void {
+    if (this.employeeForm.invalid || !this.editEmployeeId) {
+      this.showSnackbar('Please fill all required fields correctly', 'error');
+      return;
+    }
+
+    const updatedEmployee: EmployeeModel = this.employeeForm.value;
+    const employeeToUpdate = this.employees.find(e => e._id === this.editEmployeeId);
+
+    if (!employeeToUpdate) {
+      this.showSnackbar('Employee not found', 'error');
+      return;
+    }
+
+    updatedEmployee._id = this.editEmployeeId;
+    updatedEmployee._rev = employeeToUpdate._rev;
+
+    this.couchdbService.updateDocument(updatedEmployee).subscribe({
+      next: (response) => {
+        const index = this.employees.findIndex(e => e._id === this.editEmployeeId);
+        if (index !== -1) {
+          this.employees[index] = {
+            ...updatedEmployee,
+            _rev: response.rev
+          };
+          this.prepareGridData(this.employees);
+          this.showSnackbar('Employee updated successfully', 'success');
+          this.closeModal();
+        }
+      },
+      error: (error) => {
+        console.error('Error updating employee:', error);
+        this.showSnackbar('Failed to update employee', 'error');
+      }
+    });
+  }
+
+  handleDelete(employeeId: string): void {
+    if (confirm('Are you sure you want to delete this employee?')) {
+      const employee = this.employees.find(e => e._id === employeeId);
+      if (!employee || !employee._rev) {
+        this.showSnackbar('Employee not found', 'error');
+        return;
+      }
+
+      this.couchdbService.deleteDocument(employeeId, employee._rev).subscribe({
+        next: () => {
+          this.employees = this.employees.filter(e => e._id !== employeeId);
+          this.prepareGridData(this.employees);
+          this.showSnackbar('Employee deleted successfully', 'success');
+        },
+        error: (error) => {
+          console.error('Error deleting employee:', error);
+          this.showSnackbar('Failed to delete employee', 'error');
+        }
+      });
+    }
+  }
+
+  isEmpidUnique(empid: number): boolean {
+    return !this.employees.some(employee =>
+      employee.empid === empid &&
+      (!this.isEditing || employee._id !== this.editEmployeeId)
+    );
+  }
+
+  searchEmployees(): void {
+    if (!this.searchValue.trim()) {
+      this.prepareGridData(this.employees);
+      return;
+    }
+
+    this.couchdbService.searchEmployees(this.searchValue).subscribe({
+      next: (response: any) => {
+        const filtered = response.rows?.map((e: any) => e.doc) || [];
+        this.prepareGridData(filtered);
+      },
+      error: (error) => {
+        console.error('Error searching employees:', error);
+        this.showSnackbar('Failed to search employees', 'error');
+      }
+    });
+  }
+
+  downloadPDF(): void {
+    const data = document.getElementById('pdfContent');
+    if (data) {
+      html2canvas(data).then(canvas => {
+        const imgWidth = 208;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        pdf.save('employee-list.pdf');
+        this.showSnackbar('PDF downloaded successfully', 'success');
+      });
+    }
+  }
+
+  resetEmployeeForm(): void {
+    this.employeeForm.reset();
+    this.isEditing = false;
+    this.editIndex = null;
+    this.editEmployeeId = null;
+  }
+
+  private showSnackbar(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 5000,
+      panelClass: [`${type}-snackbar`],
+      horizontalPosition: 'right',
+      verticalPosition: 'top'
+    });
+  }
+}

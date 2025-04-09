@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CouchdbService } from '../../../services/couchdb.service';
 import { HttpClientModule } from '@angular/common/http';
-import { NgForm } from '@angular/forms';
+
 
 @Component({
   selector: 'app-home',
@@ -13,11 +13,11 @@ import { NgForm } from '@angular/forms';
   styleUrl: './home.component.css',
   providers:[CouchdbService]
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
   user: any = null;  // Store user data
  
 
-  constructor(private couchdbService: CouchdbService, private router: Router) {}
+  constructor(readonly couchdbService: CouchdbService, readonly router: Router) {}
 
   ngOnInit() {
     this.user = this.couchdbService.getLoggedInUser(); // Get user data from service
@@ -50,7 +50,7 @@ logout() {
       open: false,
     },
     {
-      question: 'What’s the difference between a Kanban board template and a Scrum board template?',
+      question: 'What is the difference between a Kanban board template and a Scrum board template?',
       answer:
         'Kanban boards focus on continuous flow and do not require sprints, while Scrum boards are used for sprint-based workflows with defined goals and timeframes.',
       open: false,

@@ -1,48 +1,107 @@
 <nav>
-  <button id="back" mat-button (click)="backToAssignedTasks()">Back to Assigned Tasks</button>
+  <button id="back" mat-icon-button (click)="backToAssignedTasks()" aria-label="Back to Assigned Tasks">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
   <h2>Kanban Board</h2>
-
+  <div class="header-controls">
+    <button *ngIf="!isLoading" id="refresh" mat-icon-button (click)="fetchTasksForKanban()" aria-label="Refresh tasks">
+      <mat-icon>refresh</mat-icon>
+    </button>
+    <button id="complete" mat-button (click)="showCompletedTasks()" [disabled]="isLoading">
+      {{ showCompleted ? 'Hide' : 'Show' }} Completed Tasks
+    </button>
+  </div>
 </nav>
-<div class="kanban-board">
+
+<!-- Loading State -->
+<div *ngIf="isLoading" class="loading-overlay">
+  <mat-spinner diameter="50"></mat-spinner>
+  <p>Loading tasks...</p>
+</div>
+
+<!-- Error State -->
+<div *ngIf="loadError" class="error-overlay">
+  <mat-icon class="error-icon">error_outline</mat-icon>
+  <h3>Failed to Load Tasks</h3>
+  <p>{{ errorMessage }}</p>
+  <button mat-raised-button color="primary" (click)="fetchTasksForKanban()">
+    <mat-icon>refresh</mat-icon> Try Again
+  </button>
+  <p *ngIf="hasCachedData" class="cache-notice">Showing cached data from previous session</p>
+</div>
+
+<!-- Main Content -->
+<div class="kanban-board" *ngIf="!isLoading && !loadError">
   <div class="kanban-columns">
     <div *ngFor="let status of taskStatuses" class="kanban-column"
-         (dragover)="onDragOver($event)" 
-         (drop)="onDrop($event, status)">
-
+         (dragover)="onDragOver($event, status)" 
+         (dragleave)="onDragLeave($event)"
+         (drop)="onDrop($event, status)"
+         [class.drag-over]="targetStatus === status && showDropConfirmation">
       <h3>{{ status }}</h3>
 
       <div class="task-column">
-        <mat-card *ngFor="let task of filteredTasks[status]" 
-        class="task-card"
-        draggable="true"
-        (dragstart)="onDragStart($event, task)"
-        [attr.aria-label]="'Task: ' + task.taskName + ', Priority: ' + task.priority">
+        <!-- Empty State -->
+        <div *ngIf="filteredTasks[status]?.length === 0" class="empty-state">
+          <mat-icon>inbox</mat-icon>
+          <p>No tasks in this column</p>
+        </div>
 
-          
-            <mat-card-title>{{ task.taskName }}</mat-card-title>
-            <mat-card-content>
-              <p>Assigned To: {{ task.assignedTo.name }}</p>
-              <p>Due Date: {{ task.dueDate | date: 'shortDate' }}</p>
-              <p [ngClass]="{
+        <mat-card *ngFor="let task of filteredTasks[status]" 
+                  class="task-card"
+                  draggable="true"
+                  (dragstart)="onDragStart($event, task)"
+                  [attr.aria-label]="'Task: ' + task.taskName + ', Priority: ' + task.priority">
+          <mat-card-title>{{ task.taskName }}</mat-card-title>
+          <mat-card-content>
+            <p>Due Date: {{ task.dueDate | date: 'shortDate' }}</p>
+            <p [ngClass]="{
                 'high-priority': task.priority === 'High',
                 'medium-priority': task.priority === 'Medium',
                 'low-priority': task.priority === 'Low'
-              }">Priority: {{ task.priority }}</p>
-            </mat-card-content>
-       
-         
+              }"> Priority: {{ task.priority }}</p>
+          </mat-card-content>
         </mat-card>
       </div>
 
-      
-    <div *ngIf="status === 'Done'">
-      <button mat-button  class="completed-tasks"  (click)="moveToCompletedTasks()">Move to Completed Tasks</button> 
-    </div>
+      <div *ngIf="status === 'Done'">
+        <button mat-button class="completed-tasks" (click)="moveToCompletedTasks()" [disabled]="isLoading">
+          Move to Completed Tasks
+        </button>
+      </div>
     </div>
   </div>
 
-  
+  <!-- Modal for Completed Tasks -->
+  <div *ngIf="showCompleted" class="modal-overlay">
+    <div class="modal-content">
+      <h3>Completed Tasks</h3>
+      <div class="completed-tasks-list">
+        <div *ngIf="completedTasks.length === 0" class="empty-state">
+          <mat-icon>check_circle_outline</mat-icon>
+          <p>No completed tasks yet</p>
+        </div>
+        <mat-card *ngFor="let task of completedTasks" class="task-card">
+          <mat-card-title>{{ task.taskName }}</mat-card-title>
+          <mat-card-content>
+            <p>Due Date: {{ task.dueDate | date: 'shortDate' }}</p>
+            <p>Priority: {{ task.priority }}</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+      <button mat-button (click)="showCompletedTasks()">Close</button>
+    </div>
+  </div>
 
-</div>   
-
-
+  <!-- Confirmation Dialog -->
+  <div *ngIf="showDropConfirmation" class="confirmation-dialog-overlay">
+    <div class="confirmation-dialog">
+      <h3>Confirm Move</h3>
+      <p>Are you sure you want to move "{{draggedTask?.taskName}}" to {{targetStatus}}?</p>
+      <div class="dialog-buttons">
+        <button mat-button (click)="confirmDrop()" [disabled]="isLoading">Yes, Move</button>
+        <button mat-button (click)="cancelDrop()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

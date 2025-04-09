@@ -1,20 +1,31 @@
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+
 import { HttpClientModule } from '@angular/common/http';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { CouchdbService } from '../../../services/couchdb.service';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
   standalone: true,
-  imports: [FormsModule, HttpClientModule, CommonModule, RouterModule],
+  imports: [FormsModule, HttpClientModule, CommonModule, RouterModule,MatSnackBarModule],
   providers: [CouchdbService]
 })
 export class LoginComponent {
-  constructor(private couchdbService: CouchdbService, private router: Router) {}
+  constructor(readonly couchdbService: CouchdbService, readonly router: Router, readonly snackBar: MatSnackBar) {}
+
+  showPopup(message: string, type: 'success' | 'error') {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      panelClass: type === 'success' ? 'snackbar-success' : 'snackbar-error',
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom'
+    });
+  }
 
   onSubmit(loginData: any) {
     const { email, password } = loginData;
@@ -45,37 +56,12 @@ export class LoginComponent {
 
  
 
-  // loginAsAdmin(email: string, password: string) {
-  //   console.log('Attempting Admin Login...');
-  //   this.couchdbService.login(email, password).subscribe({
-  //     next: (response: any) => {
-  //       if (response.docs.length > 0) {
-  //         const user = response.docs[0];
-  //         console.log('User found:', user);
-  //         if (user.email === email && user.password === password) {
-  //           this.couchdbService.setLoggedInUser(user); // Store user info
-  //           alert('Login successful! Redirecting to admin page...');
-  //           this.router.navigate(['/add-employee']);
-  //         } else {
-  //           alert('Invalid credentials. Please try again.');
-  //         }
-  //       } else {
-  //         alert('Invalid credentials. Please try again.'); 
-  //       }
-  //     },
-  //     error: (err: any) => {
-  //       console.error('Error during login:', err);
-  //       alert('An error occurred. Please try again later.');
-  //     }
-  //   });
-  // }
-
   loginAsAdmin(email: string, password: string) {
     console.log('Attempting Admin Login...');
     
     // Declare the admin's email and password
     const adminEmail = 'admin@example.com';  // Set the admin's email
-    const adminPassword = 'admin123'; // Set the admin's password
+    const adminPassword = 'Admin@123'; // Set the admin's password
   
     // Check if the provided credentials match the admin credentials
     if (email === adminEmail && password === adminPassword) {
@@ -88,13 +74,14 @@ export class LoginComponent {
         password: adminPassword,
         role: 'admin', // Add a role property if necessary
       };
+    
   
       this.couchdbService.setLoggedInUser(adminUser); // Store admin info
-      alert('Login successful! Redirecting to admin page...');
+      this.showPopup('Login successful! Redirecting to admin page...', 'success');
       this.router.navigate(['/add-employee']);
     } else {
-      alert('Invalid admin credentials. Please try again.');
-    }
+     
+      this.showPopup('Invalid admin credentials. Please try again.', 'error');}
   }
   
 
@@ -107,21 +94,20 @@ export class LoginComponent {
           console.log('User found:', user);
           if (user.email === email && user.password === password) {
             this.couchdbService.setLoggedInUser(user); // Save user in service and localStorage
-            alert('Login successful! Redirecting to home page...');
+            this.showPopup('Login successful! Redirecting to home page...', 'success');
             this.router.navigate(['/home']); // Redirect to home page for employees
           } else {
-            alert('Invalid credentials. Please try again.');
+            this.showPopup('Invalid credentials. Please try again.', 'error');
           }
         } else {
-          alert('Invalid credentials. Please try again.');
+          this.showPopup('Invalid credentials. Please try again.', 'error');
         }
       },
       error: (err: any) => {
         console.error('Error during login:', err);
-        alert('An error occurred. Please try again later.');
+        this.showPopup('An error occurred. Please try again later.', 'error');
       }
     });
   }
   
 }
-

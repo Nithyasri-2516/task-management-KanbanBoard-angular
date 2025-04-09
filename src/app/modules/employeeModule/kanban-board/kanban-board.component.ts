@@ -1,4 +1,3 @@
-
 import { Component, OnInit } from '@angular/core';
 import { CouchdbService } from '../../../services/couchdb.service';
 import { Router } from '@angular/router';
@@ -6,7 +5,12 @@ import { TaskModel } from '../../../task.model';
 import { HttpClientModule } from '@angular/common/http';
 import { CommonModule, DatePipe, NgFor } from '@angular/common';
 import { MatCard, MatCardContent, MatCardTitle } from '@angular/material/card';
-// MatIconModule
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule, MatOptionModule } from '@angular/material/core';
+import { FormsModule } from '@angular/forms';
+import { MatIconButton } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-kanban-board',
@@ -15,8 +19,10 @@ import { MatCard, MatCardContent, MatCardTitle } from '@angular/material/card';
   standalone: true,
   imports: [
     CommonModule, HttpClientModule, NgFor, DatePipe,
-    MatCard, MatCardTitle, MatCardContent
-],
+    MatCard, MatCardTitle, MatCardContent, 
+    MatOptionModule,MatIconButton,MatIconModule,
+    FormsModule, MatDatepickerModule, MatNativeDateModule, MatProgressSpinnerModule
+  ],
   providers: [CouchdbService]
 })
 export class KanbanBoardComponent implements OnInit {
@@ -27,68 +33,142 @@ export class KanbanBoardComponent implements OnInit {
     'Done': []
   };
   taskStatuses: string[] = ['To Do', 'In Progress', 'Done'];
-  completedTasks:TaskModel[]=[]
+  completedTasks: TaskModel[] = [];
   draggedTask: TaskModel | null = null;
-  
+  showCompleted: boolean = false;
+  showDropConfirmation: boolean = false;
+  targetStatus: string = '';
+  private pendingDropStatus: string = '';
 
-  constructor(private couchdbService: CouchdbService, private router: Router) {}
+  constructor(
+    readonly couchdbService: CouchdbService,
+    readonly router: Router
+  ) {}
 
   ngOnInit(): void {
     this.fetchTasksForKanban();
+    this.loadCompletedTasks();
   }
 
-  fetchTasksForKanban(): void {
-    const loggedInUser = this.couchdbService.getLoggedInUser();
-    const empid = loggedInUser?.empid;
-  
-    if (empid) {
-      this.couchdbService.queryAssignedTasks(empid).subscribe(
-        (response: { rows: Array<{ value: TaskModel }> }) => {
-          if (response && Array.isArray(response.rows)) {
-            this.tasks = response.rows.map(row => ({
-              ...row.value,  // Destructure the 'value' field to get the task
-              _rev: row.value._rev || '',  // Ensure _rev exists
-              status: row.value.status || 'To Do'  // Ensure default status
-            }));
-            this.filterTasksByStatus();
-          } else {
-            console.error('Invalid response format or rows are missing.');
-          }
-        },
-        (error) => console.error('Error fetching tasks:', error)
-      );
+ // Add these properties to your component
+isLoading: boolean = false;
+loadError: boolean = false;
+errorMessage: string = '';
+hasCachedData: boolean = false;
+
+// Modified fetchTasksForKanban with UI states
+fetchTasksForKanban(): void {
+  this.isLoading = true;
+  this.loadError = false;
+  this.errorMessage = '';
+
+  const loggedInUser = this.couchdbService.getLoggedInUser();
+  if (!loggedInUser) {
+    this.handleError('No user logged in');
+    this.router.navigate(['/login']);
+    return;
+  }
+
+  const empid = loggedInUser.empid;
+  if (!empid) {
+    this.handleError('No employee ID found');
+    return;
+  }
+
+  this.couchdbService.queryAssignedTasks(empid).subscribe({
+    next: (response) => {
+      try {
+        if (!response?.rows) {
+          throw new Error('Invalid response format');
+        }
+
+        this.tasks = response.rows.map((row: { value: { _rev: any; status: any; }; }) => ({
+          ...row.value,
+          _rev: row.value._rev ?? '',
+          status: row.value.status ?? 'To Do'
+        }));
+        
+        this.filterTasksByStatus();
+        this.hasCachedData = false;
+        this.isLoading = false;
+        
+        // Cache the successful response
+        localStorage.setItem('cachedTasks', JSON.stringify(this.tasks));
+      } catch (error) {
+        this.handleError('Error processing task data');
+      }
+    },
+    error: (error) => {
+      let message = 'Error fetching tasks';
+      
+      if (error.status === 0) {
+        message = 'Network error - cannot connect to server';
+      } else if (error.status === 401) {
+        message = 'Session expired - please login again';
+      } else if (error.status === 500) {
+        message = 'Server error - please try again later';
+      }
+
+      this.handleError(message);
+      
+      // Try to load from cache
+      const cachedTasks = localStorage.getItem('cachedTasks');
+      if (cachedTasks) {
+        try {
+          this.tasks = JSON.parse(cachedTasks);
+          this.filterTasksByStatus();
+          this.hasCachedData = true;
+          this.isLoading = false;
+        } catch (e) {
+          this.errorMessage = 'Failed to load cached data';
+        }
+      }
     }
-  }
-  
-  
+  });
+}
 
-   // New Method to Move Tasks to Completed
-   moveToCompletedTasks(): void {
+private handleError(message: string): void {
+  this.errorMessage = message;
+  this.loadError = true;
+  this.isLoading = false;
+  console.error(message);
+}
+
+  showCompletedTasks(): void {
+    this.showCompleted = !this.showCompleted;
+  }
+
+  moveToCompletedTasks(): void {
     const doneTasks = this.filteredTasks['Done'];
     if (doneTasks.length > 0) {
-      // Move tasks to completedTasks array
       this.completedTasks = [...this.completedTasks, ...doneTasks];
-
-      // Remove tasks from the 'Done' column
+      this.saveCompletedTasksToLocalStorage();
       this.filteredTasks['Done'] = [];
-
-      // Update the status of tasks in the database to 'Completed'
+  
       doneTasks.forEach(task => {
-        task.status = 'Completed'; // Update the status to 'Completed'
-        this.couchdbService.updateTask(task).subscribe(
-          (updatedTask) => {
+        task.status = 'Completed';
+        this.couchdbService.updateTask(task).subscribe({
+          next: (updatedTask) => {
             console.log('Task moved to completed successfully:', updatedTask);
-            task._rev = updatedTask.rev; // Update the _rev after successful update
+            task._rev = updatedTask.rev;
           },
-          (error) => console.error('Error moving task to completed:', error)
-        );
+          error: (error) => console.error('Error moving task to completed:', error),
+        });
       });
-    } else {
-      console.log('No tasks in Done column to move to completed');
     }
   }
   
 
+  saveCompletedTasksToLocalStorage(): void {
+    localStorage.setItem('completedTasks', JSON.stringify(this.completedTasks));
+  }
+
+  loadCompletedTasks(): void {
+    const storedCompletedTasks = localStorage.getItem('completedTasks');
+    if (storedCompletedTasks) {
+      this.completedTasks = JSON.parse(storedCompletedTasks);
+    }
+  }
 
   filterTasksByStatus(): void {
     this.taskStatuses.forEach(status => {
@@ -99,7 +179,6 @@ export class KanbanBoardComponent implements OnInit {
   trackByTaskId(index: number, task: TaskModel): string {
     return task._id;
   }
-  
 
   onDragStart(event: DragEvent, task: TaskModel): void {
     this.draggedTask = task;
@@ -107,51 +186,81 @@ export class KanbanBoardComponent implements OnInit {
     event.dataTransfer?.setData('application/json', JSON.stringify(task));
   }
 
-  onDragOver(event: DragEvent): void {
-    event.preventDefault(); // Required to allow drop
+  onDragOver(event: DragEvent, status: string): void {
+    event.preventDefault();
+    const target = event.currentTarget as HTMLElement;
+    target.classList.add('drag-over');
+  }
+
+  onDragLeave(event: DragEvent): void {
+    const target = event.currentTarget as HTMLElement;
+    target.classList.remove('drag-over');
   }
 
   onDrop(event: DragEvent, newStatus: string): void {
     event.preventDefault();
-  
+    
+    const target = event.currentTarget as HTMLElement;
+    target.classList.remove('drag-over');
+
     if (!this.draggedTask) {
       console.error('Error: No task is being dragged.');
       return;
     }
-  
-    if (this.draggedTask.status === newStatus) return;
-  
+
+    if (this.draggedTask.status === newStatus)
+    {
+       console.log("");
+       return;
+    }
+
+    this.pendingDropStatus = newStatus;
+    this.targetStatus = newStatus;
+    this.showDropConfirmation = true;
+  }
+
+  confirmDrop(): void {
+    if (!this.draggedTask) 
+      {
+        return;
+      }
+
     const previousStatus = this.draggedTask.status;
-  
-    // Remove task from old column
     this.filteredTasks[previousStatus] = this.filteredTasks[previousStatus].filter(
       task => task._id !== this.draggedTask?._id
     );
-  
-    // Update task status and move to new column
-    this.draggedTask.status = newStatus;
-    this.filteredTasks[newStatus].push(this.draggedTask);
-  
-    // Persist the change in CouchDB
-    this.couchdbService.updateTask(this.draggedTask).subscribe(
-      (updatedTask) => {
+
+    this.draggedTask.status = this.pendingDropStatus;
+    this.filteredTasks[this.pendingDropStatus].push(this.draggedTask);
+
+    this.couchdbService.updateTask(this.draggedTask).subscribe({
+      next: (updatedTask) => {
         console.log('Task updated successfully in CouchDB');
-  
-        // Ensure _rev is updated only if draggedTask is valid
         if (this.draggedTask) {
-          this.draggedTask._rev = updatedTask.rev;  // ✅ Update _rev
+          this.draggedTask._rev = updatedTask.rev;
         }
       },
-      (error) => console.error('Error updating task:', error)
-    );
-  
-    // Reset dragged task reference
+      error: (error) => console.error('Error updating task:', error),
+    });
+    
+
+    this.resetDropState();
+  }
+
+  cancelDrop(): void {
+    this.resetDropState();
+  }
+
+  private resetDropState(): void {
+    this.showDropConfirmation = false;
+    this.targetStatus = '';
+    this.pendingDropStatus = '';
     this.draggedTask = null;
   }
-  
 
   backToAssignedTasks(): void {
     this.router.navigate(['/assigned-tasks']);
   }
-}
 
+  
+}
